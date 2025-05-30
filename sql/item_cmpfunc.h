@@ -1162,6 +1162,21 @@ public:
   bool native_op(THD *thd, Native *to) override;
   bool fix_length_and_dec(THD *thd) override
   {
+    /*
+    Result of COALESCE is nullable iff all arguments
+    are NULL, otherwise NOT NULL.
+    */
+    bool all_args_maybe_null= true;
+    for(uint i= 0; i < arg_count; i++)
+    {
+      if (!(bool) (args[i]->base_flags & item_base_t::MAYBE_NULL))
+      {
+        all_args_maybe_null= false;
+        break;
+      }
+    }
+    if (!all_args_maybe_null)
+      base_flags &= ~item_base_t::MAYBE_NULL;
     if (aggregate_for_result(func_name_cstring(), args, arg_count, true))
       return TRUE;
     fix_attributes(args, arg_count);
@@ -1247,7 +1262,7 @@ public:
   bool fix_length_and_dec(THD *thd) override
   {
     /*
-      Set nullability from args[1] by default.
+      Set nullability after looking at both arguments.
       Note, some type handlers may reset maybe_null
       in Item_hybrid_func_fix_attributes() if args[1]
       is NOT NULL but cannot always be converted to
@@ -1256,7 +1271,9 @@ public:
         IFNULL(inet6_not_null_expr, 'foo') -> INET6 NULL
         IFNULL(inet6_not_null_expr, '::1') -> INET6 NOT NULL
     */
-    copy_flags(args[1], item_base_t::MAYBE_NULL);
+    if (!(bool) (args[0]->base_flags & item_base_t::MAYBE_NULL) ||
+        !(bool) (args[1]->base_flags & item_base_t::MAYBE_NULL))
+        base_flags &= ~item_base_t::MAYBE_NULL;
     if (Item_func_case_abbreviation2::fix_length_and_dec2(args))
       return TRUE;
     return FALSE;
