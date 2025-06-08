@@ -578,16 +578,16 @@ bool Opt_hints_table::is_fixed(opt_hints_enum type_arg)
 }
 
 
-void Opt_hints_table::set_compound_key_hint_map(Opt_hints *hint, uint arg)
+void Opt_hints_table::set_compound_key_hint_map(Opt_hints *hint, uint keynr)
 {
   if (hint->is_specified(INDEX_HINT_ENUM))
-    global_index.set_key_map(arg);
+    global_index.set_key_map(keynr);
   if (hint->is_specified(JOIN_INDEX_HINT_ENUM))
-    join_index.set_key_map(arg);
+    join_index.set_key_map(keynr);
   if (hint->is_specified(GROUP_INDEX_HINT_ENUM))
-    group_index.set_key_map(arg);
+    group_index.set_key_map(keynr);
   if (hint->is_specified(ORDER_INDEX_HINT_ENUM))
-    order_index.set_key_map(arg);
+    order_index.set_key_map(keynr);
 }
 
 
@@ -618,7 +618,7 @@ Compound_key_hint *Opt_hints_table::get_compound_key_hint(opt_hints_enum type)
 */
 
 void Opt_hints_table::update_index_hint_map(Key_map *keys_to_use,
-                                            Key_map *available_keys_to_use,
+                                            const Key_map *available_keys_to_use,
                                             opt_hints_enum type_arg)
 {
   // Check if hint is resolved.
@@ -671,7 +671,12 @@ void Opt_hints_table::update_index_hint_map(Key_map *keys_to_use,
 
 
 /**
-  For each index hint that is not ignored, include the index in
+  @brief
+    Set TABLE::keys_in_use_for_XXXX and other members according to the
+    specified index hints for this table
+
+  @detail
+    For each index hint that is not ignored, include the index in
     - tbl->keys_in_use_for_query if the hint is INDEX or JOIN_INDEX
     - tbl->keys_in_use_for_group_by if the hint is INDEX or
       GROUP_INDEX
@@ -683,7 +688,9 @@ void Opt_hints_table::update_index_hint_map(Key_map *keys_to_use,
   @param thd            pointer to THD object
   @param tbl            pointer to TABLE object
 
-  @return false if no index hint is specified, true otherwise.
+  @return
+    false if no index hint is specified
+    true otherwise.
 */
 
 bool Opt_hints_table::update_index_hint_maps(THD *thd, TABLE *tbl)

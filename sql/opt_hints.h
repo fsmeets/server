@@ -619,6 +619,7 @@ public:
 
 /**
   Table level hints.
+  Collection of hints attached to a certain table (and its indexes)
 */
 
 class Opt_hints_table : public Opt_hints
@@ -674,10 +675,6 @@ public:
     return ER_UNRESOLVED_TABLE_HINT_NAME;
   }
 
-  bool is_hint_conflicting(Opt_hints_key *key_hint, opt_hints_enum type) const;
-
-  void set_compound_key_hint_map(Opt_hints *hint, uint arg);
-
   Compound_key_hint *get_compound_key_hint(opt_hints_enum type);
 
   void append_hint_arguments(THD *thd, opt_hints_enum hint,
@@ -689,10 +686,13 @@ public:
             get_switch(type_arg));
   }
 
-  void update_index_hint_map(Key_map *keys_to_use,
-                             Key_map *available_keys_to_use,
-                             opt_hints_enum type_arg);
   bool update_index_hint_maps(THD *thd, TABLE *tbl);
+private:
+  void update_index_hint_map(Key_map *keys_to_use,
+                             const Key_map *available_keys_to_use,
+                             opt_hints_enum type_arg);
+  void set_compound_key_hint_map(Opt_hints *hint, uint keynr);
+
 };
 
 bool is_index_hint_conflicting(Opt_hints_table *table_hint,
