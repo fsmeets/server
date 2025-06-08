@@ -625,7 +625,16 @@ public:
 class Opt_hints_table : public Opt_hints
 {
 public:
+  /*
+    keyinfo_array[IDX] has all hint prescriptions for index number IDX.
+  */
   Mem_root_array<Opt_hints_key *> keyinfo_array;
+
+  /*
+    Index sets specified in [NO_]INDEX, [NO_]JOIN_INDEX, [NO_]GROUP_INDEX,
+    [NO_]ORDER_INDEX hints.
+    Check get_switch(hint_enum) to see if it's INDEX or NO_INDEX, etc.
+  */
   Compound_key_hint global_index, join_index, group_index, order_index;
 
   Opt_hints_table(const Lex_ident_sys &table_name_arg,
@@ -680,14 +689,15 @@ public:
   void append_hint_arguments(THD *thd, opt_hints_enum hint,
                              String *str) override;
 
+
+  bool update_index_hint_maps(THD *thd, TABLE *tbl);
+private:
   bool is_force_index_hint(opt_hints_enum type_arg)
   {
     return (get_compound_key_hint(type_arg)->is_fixed() &&
             get_switch(type_arg));
   }
 
-  bool update_index_hint_maps(THD *thd, TABLE *tbl);
-private:
   void update_index_hint_map(Key_map *keys_to_use,
                              const Key_map *available_keys_to_use,
                              opt_hints_enum type_arg);
@@ -704,6 +714,7 @@ bool is_compound_hint(opt_hints_enum type_arg);
 
 /**
   Key level hints.
+  A set of hints attached to a particular index.
 */
 
 class Opt_hints_key : public Opt_hints
