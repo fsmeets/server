@@ -607,7 +607,7 @@ public:
 
   const Parser::Index_level_hint *parsed_hint= nullptr;
 
-  void set_fixed(bool arg) { fixed= arg; }
+  void set_fixed() { fixed= true; }
   bool is_fixed() const { return fixed; }
 
   void set_key_map(uint i) { key_map.set_bit(i); }

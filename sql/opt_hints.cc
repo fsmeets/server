@@ -559,13 +559,13 @@ void Opt_hints_table::set_fixed()
 {
   Opt_hints::set_fixed();
   if (is_specified(INDEX_HINT_ENUM))
-    global_index.set_fixed(true);
+    global_index.set_fixed();
   if (is_specified(JOIN_INDEX_HINT_ENUM))
-    join_index.set_fixed(true);
+    join_index.set_fixed();
   if (is_specified(GROUP_INDEX_HINT_ENUM))
-    group_index.set_fixed(true);
+    group_index.set_fixed();
   if (is_specified(ORDER_INDEX_HINT_ENUM))
-    order_index.set_fixed(true);
+    order_index.set_fixed();
 }
 
 
